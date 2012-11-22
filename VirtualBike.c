@@ -35,7 +35,7 @@ const float SPEED_FAST = 8.33;
 const int TIMEOUT_TIME = 2000;
 
 // Debuging
-const bool DEBUG = false;
+const bool DEBUG = 0;
 
 // globale variables
 unsigned long RotationStart = 0;
@@ -65,7 +65,7 @@ void setup() {
 	pinMode(SPEED_PIN, INPUT);
 	
 	// init global vars
-	WheelDistanceInM =  3.14 * 2.54 * WHEEL / 100;
+	WheelDistanceInM =  2 * 3.14 * 2.54 * WHEEL / 100;
 }
 
 /*F******************************************************************
@@ -81,7 +81,7 @@ void setup() {
 void loop() {
 	if (digitalRead(SPEED_PIN) == LOW) {
 		while (digitalRead(SPEED_PIN) == LOW){
-			bailout(millis());
+			timeout(millis());
 		} 
 		// after phaseshift
 		setOutput(getSpeed(RotationStart, millis()));
@@ -111,7 +111,7 @@ float getSpeed(unsigned long rotation_start, unsigned long rotation_end) {
 	float second_per_cycle = (rotation_end - rotation_start) / 1000.0f;
 	float cycle_per_second = 1 / second_per_cycle;
 	
-	float meter_per_second = second_per_cycle * WheelDistanceInM;
+	float meter_per_second = cycle_per_second * WheelDistanceInM;
 	return meter_per_second;
 }
 
@@ -132,24 +132,33 @@ float getSpeed(unsigned long rotation_start, unsigned long rotation_end) {
 *F*/
 void setOutput(float meter_per_second) {
 	Keyboard.releaseAll();
+	
+	if (DEBUG) {
+		Keyboard.print("Meter per Second  ");
+		Keyboard.println(meter_per_second);
+	}
+	
 	if (meter_per_second <=  SPEED_NORMAL) {
 		// slow
 		if (DEBUG) {
-			Keyboard.write('w');
+			Keyboard.println("slow");
 		} else {	
-			Keyboard.press(KEY_UP_ARROW);
+			Keyboard.write(KEY_UP_ARROW);
 		}
 	} else if (meter_per_second <= SPEED_FAST) {
 		// normal
 		if (DEBUG) {
-			Keyboard.write('w');
+			Keyboard.println("normal");
 		} else {	
 			Keyboard.press(KEY_UP_ARROW);
 		}
 	} else {
 		// fast
-		//Mouse.move(0, 0, 10);
-		Keyboard.press(KEY_UP_ARROW);
+		if (DEBUG) {
+			Keyboard.println("fast");
+		} else {	
+			Mouse.move(0, 0, -10);
+		}
 	}
 }
 
@@ -164,7 +173,7 @@ void setOutput(float meter_per_second) {
 *F*/
 
 void timeout(unsigned long time){
-	if ((this.time - RotationStart) > TIMEOUT_TIME) {
+	if ((time - RotationStart) > TIMEOUT_TIME) {
 		Keyboard.releaseAll();
 	}
 }
