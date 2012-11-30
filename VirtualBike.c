@@ -5,8 +5,6 @@
 * Author : Sebastian Hansack, 
 */
 
-//widerstände 12kohm bis 30 kohm
-
 /********************************************************************
 * Copyright 2012  
 *
@@ -24,7 +22,9 @@
 */
 
 // constants general
-const int SPEED_PIN = 7; // Messsonde 
+const int PIN_SPEED = 7; // Messsonde 
+const int PIN_LEFT = A0;
+const int PIN_RIGHT = A1;
 const int WHEEL = 27; // in Zoll
 
 // constants speed -- opening in meter per second
@@ -33,6 +33,9 @@ const float SPEED_FAST = 8.33;
 
 // constant timeout - in millisecond
 const int TIMEOUT_TIME = 2000;
+
+// constant diff Resistors
+const int DIFF_RESISTOR = 25;
 
 // Debuging
 const bool DEBUG = 0;
@@ -43,7 +46,9 @@ float WheelDistanceInM = 0;
 
 // forward declaration
 float getSpeed(unsigned long rotation_start, unsigned long rotation_end);
-void setOutput(float meter_per_second);
+int getDirection();
+void setOutputSpeed(float meter_per_second);
+void setOutputDirection(int direction);
 void timeout(unsigned long time);
 
 /*F******************************************************************
@@ -62,7 +67,7 @@ void setup() {
 	Keyboard.begin();
 	
 	// init pins
-	pinMode(SPEED_PIN, INPUT);
+	pinMode(PIN_SPEED, INPUT);
 	
 	// init global vars
 	WheelDistanceInM =  2 * 3.14 * 2.54 * WHEEL / 100;
@@ -79,14 +84,16 @@ void setup() {
 * NOTES :   none
 *F*/
 void loop() {
-	if (digitalRead(SPEED_PIN) == LOW) {
-		while (digitalRead(SPEED_PIN) == LOW){
+	
+	if (digitalRead(PIN_SPEED) == HIGH) {
+		delay(20); // smotthness
+		while (digitalRead(PIN_SPEED) == HIGH){
 			timeout(millis());
+			setOutputDirection(getDirection());
 		} 
 		// after phaseshift
-		setOutput(getSpeed(RotationStart, millis()));
+		setOutputSpeed(getSpeed(RotationStart, millis()));
 	}
-	
 	// steer the bicycle
 	
 }
@@ -116,10 +123,62 @@ float getSpeed(unsigned long rotation_start, unsigned long rotation_end) {
 }
 
 /*F******************************************************************
-* float
-* setOutput( meter_per_second )
+* int
+* getDirection()
 *
-* meter_per_second      float; => speed 
+* PURPOSE : clean everything
+*
+* RETURN :  void
+*
+*F*/
+int getDirection(){
+	
+	if (DEBUG) {
+		int debug_left = analogRead(PIN_LEFT);
+		int debug_right = analogRead(PIN_RIGHT);
+		delay(1000);
+		Keyboard.print("Left ");
+		Keyboard.println(debug_left);
+		Keyboard.print("Right ");
+		Keyboard.println(debug_right);
+		Keyboard.println(debug_left - debug_right);
+	}
+	
+	return analogRead(PIN_LEFT) - analogRead(PIN_RIGHT);
+}
+
+/*F******************************************************************
+* void
+* setOutputDirection()
+*
+*F*/
+void setOutputDirection(int direction) {
+	Keyboard.release(215);
+	Keyboard.release(216);
+
+	if (direction > (0 + DIFF_RESISTOR)) {
+		// postiv => right
+		if (DEBUG){
+			Keyboard.println("RIGHT");
+		}
+		
+		Keyboard.press(215);
+		
+	} else if (direction < (0 - DIFF_RESISTOR)){
+		// negativ => left
+		if (DEBUG){
+			Keyboard.println("LEFT");
+		}
+		
+		Keyboard.press(216);
+	}
+}
+
+/*F******************************************************************
+* void
+* setOutputSpeed()
+*
+* meter_per_second      float; => speed
 *
 * PURPOSE : calculating the speed of a wheel in meter per second
 *
@@ -130,8 +189,9 @@ float getSpeed(unsigned long rotation_start, unsigned long rotation_end) {
 *			normal => 	15 to 30	4.16 to 8.33 
 *			fast => 	30 to ???	8.33 to ???
 *F*/
-void setOutput(float meter_per_second) {
-	Keyboard.releaseAll();
+void setOutputSpeed(float meter_per_second) {
+	Keyboard.release(218);
+	Keyboard.release(211);
 	
 	if (DEBUG) {
 		Keyboard.print("Meter per Second  ");
@@ -143,21 +203,21 @@ void setOutput(float meter_per_second) {
 		if (DEBUG) {
 			Keyboard.println("slow");
 		} else {	
-			Keyboard.write(KEY_UP_ARROW);
+			Keyboard.press(218);
 		}
 	} else if (meter_per_second <= SPEED_FAST) {
 		// normal
 		if (DEBUG) {
 			Keyboard.println("normal");
 		} else {	
-			Keyboard.press(KEY_UP_ARROW);
+			Keyboard.press(218);
 		}
 	} else {
 		// fast
 		if (DEBUG) {
 			Keyboard.println("fast");
 		} else {	
-			Mouse.move(0, 0, -10);
+			Keyboard.press(211);
 		}
 	}
 }
