@@ -22,7 +22,7 @@
 */
 
 // constants general
-const int PIN_SPEED = 7; // Messsonde 
+const int PIN_SPEED = 0; // Can be DigitalPin 0 to DigitalPin 3 
 const int PIN_LEFT = A0;
 const int PIN_RIGHT = A1;
 const int WHEEL = 27; // in Zoll
@@ -47,13 +47,13 @@ const int KEYBOARD_UP = 218;
 const int KEYBOARD_PAGEUP = 211;
 
 // globale variables
-unsigned long RotationStart = 0;
+unsigned long LastIntervalTime = 0;
+unsigned long ActualIntervalTime = 0;
 float WheelDistanceInM = 0;
 int ActualDirection = 0;
 float ActualSpeed = 0;
 int RightBorderValue = 0;
 int LeftBorderValue = 0;
-
 
 // forward declaration
 float getSpeed(unsigned long rotation_start, unsigned long rotation_end);
@@ -70,7 +70,10 @@ void timeoutSpeed(unsigned long time);
 *
 * RETURN :  void
 *
-* NOTES :   none
+* NOTES :   
+*		Interrupts:
+*			Board			int.0		int.1		int.2		int.3
+*			Leonardo	DP 3		DP 2		DP 0		DP 1
 *F*/
 void setup() {
 	// init controlls
@@ -78,7 +81,18 @@ void setup() {
 	Keyboard.begin();
 	
 	// init pins
-	pinMode(PIN_SPEED, INPUT);
+	int interrupt_pin;
+	if (PIN_SPEED == 0) {
+		interrupt_pin = 2;
+	} else if (PIN_SPEED == 1) {
+		interrupt_pin = 3;
+	} else if (PIN_SPEED == 2) {
+		interrupt_pin = 1;
+	} else {
+		interrupt_pin = 0;
+	}
+	
+	attachInterrupt(interrupt_pin, setSpeedTime, FALLING);
 	
 	// init global vars
 	WheelDistanceInM =  2 * 3.14 * 2.54 * WHEEL / 100;
@@ -97,17 +111,29 @@ void setup() {
 * NOTES :   none
 *F*/
 void loop() {
+	setOutputDirection(getDirection());
 	
-	if (digitalRead(PIN_SPEED) == HIGH) {
-		while (digitalRead(PIN_SPEED) == HIGH){
-			timeout(millis());
-			setOutputDirection(getDirection());
-		} 
-		// after phaseshift
-		setOutputSpeed(getSpeed(RotationStart, millis()));
+	if (ActualIntervalTime != LastIntervalTime) {
+		setOutputSpeed(getSpeed(LastIntervalTime, ActualIntervalTime);
+		// New Intervall starts
+		LastIntervalTime = ActualIntervalTime;
 	}
-	// steer the bicycle
 	
+	timeout(millis());
+}
+
+/*F******************************************************************
+* void
+* setSpeedTime()
+*
+* PURPOSE : set the ActualIntervalTime
+*
+* RETURN :  void
+*
+* NOTES :   none
+*F*/
+void setSpeedTime() {
+	ActualIntervalTime = millis();
 }
 
 /*F******************************************************************
@@ -123,11 +149,8 @@ void loop() {
 *
 * NOTES :   none
 *F*/
-float getSpeed(unsigned long rotation_start, unsigned long rotation_end) {
-	// next rotation start is this rotation end
-	RotationStart = rotation_end;
-	
-	float second_per_cycle = (rotation_end - rotation_start) / 1000.0f;
+float getSpeed(unsigned long start_time, unsigned long end_time) {
+	float second_per_cycle = (end_time - start_time) / 1000.0f;
 	float cycle_per_second = 1 / second_per_cycle;
 	
 	float meter_per_second = cycle_per_second * WheelDistanceInM;
