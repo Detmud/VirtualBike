@@ -73,7 +73,7 @@ void timeoutSpeed(unsigned long time);
 * NOTES :   
 *    Interrupts:
 *      Board      int.0    int.1    int.2    int.3
-*      Leonardo  DP 3    DP 2    DP 0    DP 1
+*      Leonardo   DP 3     DP 2     DP 0     DP 1
 *F*/
 void setup() {
   // init controlls
@@ -197,7 +197,7 @@ void setOutputDirection(int direction) {
     if (DEBUG) 
       Keyboard.println("Direction Right");
       
-    // postiv => right
+    // postiv  => right
     
     // actual  =>  dir
     // ---------------
@@ -219,7 +219,7 @@ void setOutputDirection(int direction) {
     
     // actual  =>  dir
     // ---------------
-    // Right  =>  Left
+    // Right   =>  Left
     // None    =>  Left
     
     // if actual dir is right
@@ -236,7 +236,7 @@ void setOutputDirection(int direction) {
     
     // actual  =>  dir
     // ---------------
-    // Right  =>  None
+    // Right   =>  None
     if (ActualDirection >= RightBorderValue)
       Keyboard.release(KEYBOARD_RIGHT);
     
@@ -249,7 +249,7 @@ void setOutputDirection(int direction) {
     // actual  =>  dir
     // ---------------
     // Left    =>  Left
-    // Right  =>  Right
+    // Right   =>  Right
     // None    =>  None
     
   }
@@ -265,10 +265,10 @@ void setOutputDirection(int direction) {
 *
 * RETURN :  void
 *
-* NOTES :        km/h    meter per second
-*      slow =>    0 to 15    0 to 4.16
-*      normal =>   15 to 30  4.16 to 8.33 
-*      fast =>   30 to ???  8.33 to ???
+* NOTES :         km/h        meter per second
+*      slow =>     0 to 15       0 to 4.16
+*      normal =>  15 to 30    4.16 to 8.33 
+*      fast =>    30 to ???   8.33 to ???
 *      
 *      speed        actual speed
 *      ----------------------------------
