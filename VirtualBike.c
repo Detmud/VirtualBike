@@ -1,4 +1,5 @@
 /********************************************************************
+/********************************************************************
 * Name : User Shortcode
 * Description : Drive trough Google Earth
 * Version : 1.0
@@ -22,23 +23,24 @@
 */
 
 // constants general
-const int PIN_SPEED = 0; // Can be DigitalPin 0 to DigitalPin 3 
+const int PIN_SPEED = 2; // Can be DigitalPin 2 to DigitalPin 3 
 const int PIN_LEFT = A0;
 const int PIN_RIGHT = A1;
+const int PIN_DEBUG = 7;
 const int WHEEL = 27; // in Zoll
 
 // constants speed -- opening in meter per second
-const float SPEED_NORMAL = 4.16;
-const float SPEED_FAST = 8.33;
+const float SPEED_NORMAL = 6.16;
+const float SPEED_FAST = 12.33;
 
 // constant timeout - in millisecond
 const int TIMEOUT_TIME = 2000;
 
 // constant diff Resistors
-const int DIFF_RESISTOR = 25;
+const int DIFF_RESISTOR = 40;
 
 // Debuging
-const bool DEBUG = 0;
+bool DEBUG = 0;
 
 // constants keyboard
 const int KEYBOARD_LEFT = 216;
@@ -58,6 +60,7 @@ int LeftBorderValue = 0;
 // forward declaration
 float getSpeed(unsigned long rotation_start, unsigned long rotation_end);
 int getDirection();
+void setSpeedTime();
 void setOutputSpeed(float meter_per_second);
 void setOutputDirection(int direction);
 void timeoutSpeed(unsigned long time);
@@ -82,11 +85,8 @@ void setup() {
 
   // init pins
   int interrupt_pin;
-  if (PIN_SPEED == 0) {
-    interrupt_pin = 2;
-  } else if (PIN_SPEED == 1) {
-    interrupt_pin = 3;
-  } else if (PIN_SPEED == 2) {
+  
+  if (PIN_SPEED == 2) {
     interrupt_pin = 1;
   } else {
     interrupt_pin = 0;
@@ -111,8 +111,14 @@ void setup() {
 * NOTES :   none
 *F*/
 void loop() {
+  
+  if (digitalRead(PIN_DEBUG) == LOW)
+    DEBUG = 1;
+  else
+    DEBUG = 0;
+  
   setOutputDirection(getDirection());
-
+  
   if (ActualIntervalTime != LastIntervalTime) {
     setOutputSpeed(getSpeed(LastIntervalTime, ActualIntervalTime));
     // New Intervall starts
@@ -133,6 +139,9 @@ void loop() {
 * NOTES :   none
 *F*/
 void setSpeedTime() {
+  if(DEBUG)
+    Keyboard.println("INTERRUPT");
+  
   ActualIntervalTime = millis();
 }
 
@@ -167,15 +176,11 @@ float getSpeed(unsigned long start_time, unsigned long end_time) {
 *
 *F*/
 int getDirection(){
-
+  
   if (DEBUG) {
     int debug_left = analogRead(PIN_LEFT);
     int debug_right = analogRead(PIN_RIGHT);
-    delay(1000);
-    Keyboard.print("Left ");
-    Keyboard.println(debug_left);
-    Keyboard.print("Right ");
-    Keyboard.println(debug_right);
+    delay(2000);
     Keyboard.print("Diff ");
     Keyboard.println(debug_left - debug_right);
   }
@@ -190,12 +195,12 @@ int getDirection(){
 * RETURN :  void
 *
 *F*/
-void setOutputDirection(int direction) {
-
+void setOutputDirection(int new_direction) {
+  
   // if direction is really right and the actual direction is none or left
-  if ((direction >= RightBorderValue) && (ActualDirection < RightBorderValue)) {
+  if ((new_direction >= RightBorderValue) && (ActualDirection < RightBorderValue)) {
     if (DEBUG) 
-      Keyboard.println("Direction Right");
+      Keyboard.println("DIR TO RIGHT");
 
     // postiv  => right
 
@@ -205,15 +210,17 @@ void setOutputDirection(int direction) {
     // None    =>  Right
 
     // if actual dir is left
+    
     if (ActualDirection <= LeftBorderValue)
       Keyboard.release(KEYBOARD_LEFT);
 
     // now we drive right
-    Keyboard.press(KEYBOARD_RIGHT);
-
-  } else if ((direction <= LeftBorderValue) && (ActualDirection > LeftBorderValue)){
+    if (!DEBUG)
+      Keyboard.press(KEYBOARD_RIGHT);
+      
+  } else if ((new_direction <= LeftBorderValue) && (ActualDirection > LeftBorderValue)){
     if (DEBUG) 
-    Keyboard.println("Direction Left");
+      Keyboard.println("DIR TO LEFT");
 
     // negativ => left
 
@@ -221,24 +228,46 @@ void setOutputDirection(int direction) {
     // ---------------
     // Right   =>  Left
     // None    =>  Left
-
     // if actual dir is right
     if (ActualDirection >= RightBorderValue)
-      Keyboard.release(KEYBOARD_RIGHT);
-
+        Keyboard.release(KEYBOARD_RIGHT);
+        
     // now we drive left
-    Keyboard.press(KEYBOARD_LEFT);
-
+    if(!DEBUG)
+        Keyboard.press(KEYBOARD_LEFT);
+      
+  } else if ((new_direction <= LeftBorderValue) && (ActualDirection <= LeftBorderValue)) {
+  // actual  =>  dir
+  // ---------------
+  // Left    =>  Left
+    if (DEBUG)
+      Keyboard.println("DIR LEFT LEFT");
+      
+  } else if ((new_direction >= RightBorderValue) && (ActualDirection >= RightBorderValue)) {
+    // actual  =>  dir
+    // ---------------
+    // Right   =>  Right
+    if (DEBUG)
+      Keyboard.println("DIR RIGHT RIGHT");
+    
+  } else if (((new_direction < RightBorderValue) && (new_direction > LeftBorderValue)) && 
+            ((ActualDirection < RightBorderValue) && (ActualDirection > LeftBorderValue))) {
+    // actual  =>  dir
+    // ---------------
+    // NONE   =>  NONE
+    if (DEBUG)
+      Keyboard.println("DIR NONE NONE");
+      
   } else {
     if (DEBUG) 
-    Keyboard.println("Direction None");
+      Keyboard.println("DIR LR TO NONE");
     // no direction
 
     // actual  =>  dir
     // ---------------
     // Right   =>  None
     if (ActualDirection >= RightBorderValue)
-      Keyboard.release(KEYBOARD_RIGHT);
+        Keyboard.release(KEYBOARD_RIGHT);
 
     // actual  =>  dir
     // ---------------
@@ -246,15 +275,9 @@ void setOutputDirection(int direction) {
     if (ActualDirection <= LeftBorderValue)
       Keyboard.release(KEYBOARD_LEFT);
 
-    // actual  =>  dir
-    // ---------------
-    // Left    =>  Left
-    // Right   =>  Right
-    // None    =>  None
-
   }
 
-  ActualDirection = direction;
+  ActualDirection = new_direction;
 }
 
 /*F******************************************************************
@@ -299,10 +322,12 @@ void setOutputSpeed(float speed) {
 
     } else if (ActualSpeed <= SPEED_FAST) {
       // Slow    <=  Normal  ==  Release: Up
-      Keyboard.release(KEYBOARD_UP);
+      if(!DEBUG)
+        Keyboard.release(KEYBOARD_UP);
     } else {
       // Slow    <=  Fast    ==  Release: PageUp
-      Keyboard.release(KEYBOARD_PAGEUP);
+      if(!DEBUG)
+        Keyboard.release(KEYBOARD_PAGEUP);
     }
 
   // SPEED : NORMAL
@@ -312,14 +337,17 @@ void setOutputSpeed(float speed) {
 
     if (ActualSpeed <= SPEED_NORMAL) {
       // Normal  <=  Slow    ==  Press: Up
-      Keyboard.press(KEYBOARD_UP);
+      if(!DEBUG)
+        Keyboard.press(KEYBOARD_UP);
     } else if (ActualSpeed <= SPEED_FAST) {
       // Normal  <=  Normal  ==  nothing
 
     } else {
       // Normal  <=  Fast    ==  Release: PageUp; Press Up
-      Keyboard.release(KEYBOARD_PAGEUP);
-      Keyboard.press(KEYBOARD_UP);
+      if(!DEBUG){
+        Keyboard.release(KEYBOARD_PAGEUP);
+        Keyboard.press(KEYBOARD_UP);
+      }
     }
 
   // SPEED : FAST
@@ -329,11 +357,14 @@ void setOutputSpeed(float speed) {
 
     if (ActualSpeed <= SPEED_NORMAL) {
       // Fast    <=  Slow    ==  Press: PageUp
-      Keyboard.press(KEYBOARD_PAGEUP);
+      if(!DEBUG)
+        Keyboard.press(KEYBOARD_PAGEUP);
     } else if (ActualSpeed <= SPEED_FAST) {
       // Fast    <=  Normal  ==  Release: Up, Press PageUp
-      Keyboard.release(KEYBOARD_UP);
-      Keyboard.press(KEYBOARD_PAGEUP);
+      if(!DEBUG){
+        Keyboard.release(KEYBOARD_UP);
+        Keyboard.press(KEYBOARD_PAGEUP);
+      }
     } else {
       // Fast    <=  Fast    ==  nothing
 
@@ -354,7 +385,9 @@ void setOutputSpeed(float speed) {
 *F*/
 void timeoutSpeed(unsigned long timeout){
   if ((timeout - LastIntervalTime) > TIMEOUT_TIME) {
-    Keyboard.release(KEYBOARD_PAGEUP);
-    Keyboard.release(KEYBOARD_UP);
+    if(!DEBUG){
+      Keyboard.release(KEYBOARD_PAGEUP);
+      Keyboard.release(KEYBOARD_UP);
+    }
   }
 }
