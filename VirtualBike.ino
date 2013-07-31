@@ -95,7 +95,7 @@ void setup() {
   attachInterrupt(interrupt_pin, setSpeedTime, FALLING);
 
   // init global vars
-  WheelDistanceInM =  2 * 3.14 * 2.54 * WHEEL / 100;
+  WheelDistanceInM = 3.14 * 2.54 * WHEEL / 100;
   RightBorderValue = DIFF_RESISTOR;
   LeftBorderValue = 0 - DIFF_RESISTOR;
 }

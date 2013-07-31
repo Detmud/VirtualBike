@@ -85,7 +85,7 @@ void setup() {
 
   // init pins
   int interrupt_pin;
-  
+
   if (PIN_SPEED == 2) {
     interrupt_pin = 1;
   } else {
@@ -95,7 +95,7 @@ void setup() {
   attachInterrupt(interrupt_pin, setSpeedTime, FALLING);
 
   // init global vars
-  WheelDistanceInM =  2 * 3.14 * 2.54 * WHEEL / 100;
+  WheelDistanceInM = 3.14 * 2.54 * WHEEL / 100;
   RightBorderValue = DIFF_RESISTOR;
   LeftBorderValue = 0 - DIFF_RESISTOR;
 }
@@ -111,14 +111,14 @@ void setup() {
 * NOTES :   none
 *F*/
 void loop() {
-  
+
   if (digitalRead(PIN_DEBUG) == LOW)
     DEBUG = 1;
   else
     DEBUG = 0;
-  
+
   setOutputDirection(getDirection());
-  
+
   if (ActualIntervalTime != LastIntervalTime) {
     setOutputSpeed(getSpeed(LastIntervalTime, ActualIntervalTime));
     // New Intervall starts
@@ -141,7 +141,7 @@ void loop() {
 void setSpeedTime() {
   if(DEBUG)
     Keyboard.println("INTERRUPT");
-  
+
   ActualIntervalTime = millis();
 }
 
@@ -176,7 +176,7 @@ float getSpeed(unsigned long start_time, unsigned long end_time) {
 *
 *F*/
 int getDirection(){
-  
+
   if (DEBUG) {
     int debug_left = analogRead(PIN_LEFT);
     int debug_right = analogRead(PIN_RIGHT);
@@ -196,7 +196,7 @@ int getDirection(){
 *
 *F*/
 void setOutputDirection(int new_direction) {
-  
+
   // if direction is really right and the actual direction is none or left
   if ((new_direction >= RightBorderValue) && (ActualDirection < RightBorderValue)) {
     if (DEBUG) 
@@ -210,14 +210,14 @@ void setOutputDirection(int new_direction) {
     // None    =>  Right
 
     // if actual dir is left
-    
+
     if (ActualDirection <= LeftBorderValue)
       Keyboard.release(KEYBOARD_LEFT);
 
     // now we drive right
     if (!DEBUG)
       Keyboard.press(KEYBOARD_RIGHT);
-      
+
   } else if ((new_direction <= LeftBorderValue) && (ActualDirection > LeftBorderValue)){
     if (DEBUG) 
       Keyboard.println("DIR TO LEFT");
@@ -231,25 +231,25 @@ void setOutputDirection(int new_direction) {
     // if actual dir is right
     if (ActualDirection >= RightBorderValue)
         Keyboard.release(KEYBOARD_RIGHT);
-        
+
     // now we drive left
     if(!DEBUG)
         Keyboard.press(KEYBOARD_LEFT);
-      
+
   } else if ((new_direction <= LeftBorderValue) && (ActualDirection <= LeftBorderValue)) {
   // actual  =>  dir
   // ---------------
   // Left    =>  Left
     if (DEBUG)
       Keyboard.println("DIR LEFT LEFT");
-      
+
   } else if ((new_direction >= RightBorderValue) && (ActualDirection >= RightBorderValue)) {
     // actual  =>  dir
     // ---------------
     // Right   =>  Right
     if (DEBUG)
       Keyboard.println("DIR RIGHT RIGHT");
-    
+
   } else if (((new_direction < RightBorderValue) && (new_direction > LeftBorderValue)) && 
             ((ActualDirection < RightBorderValue) && (ActualDirection > LeftBorderValue))) {
     // actual  =>  dir
@@ -257,7 +257,7 @@ void setOutputDirection(int new_direction) {
     // NONE   =>  NONE
     if (DEBUG)
       Keyboard.println("DIR NONE NONE");
-      
+
   } else {
     if (DEBUG) 
       Keyboard.println("DIR LR TO NONE");
