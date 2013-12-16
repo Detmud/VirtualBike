@@ -33,9 +33,9 @@
 *			Leonardo	 DP 3		 DP 2		 DP 0		 DP 1		 DP 7
 */
 
-const int PIN_SPEED = 2;	// This is the Digital Pin, not the Interrupt
-const int PIN_LEFT = 3;	 // This is the Digital Pin, not the Interrupt
-const int PIN_RIGHT = 1;	// This is the Digital Pin, not the Interrupt
+const int PIN_SPEED = 1;	// This is the Digital Pin, not the Interrupt
+const int PIN_LEFT = 0;	 // This is the Digital Pin, not the Interrupt
+const int PIN_RIGHT = 3;	// This is the Digital Pin, not the Interrupt
 const int PIN_DEBUG = 7;
 const int WHEEL = 27; // in Zoll
 
@@ -54,6 +54,7 @@ const int KEYBOARD_LEFT = 216;
 const int KEYBOARD_RIGHT = 215;
 const int KEYBOARD_UP = 218;
 const int KEYBOARD_PAGEUP = 211;
+const int TABBI_SPEED = 69;
 
 // globale variables
 unsigned long LastIntervalTime = 0;
@@ -64,6 +65,7 @@ int NewDirection = 0;
 float ActualSpeed = 0;
 
 // forward declaration
+void intTabbiSpeed();
 float getSpeed(unsigned long rotation_start, unsigned long rotation_end);
 int getDirection();
 void setSpeedTime();
@@ -90,7 +92,7 @@ void setup() {
 	Keyboard.begin();
 
 	// init pins
-	attachInterrupt(PIN_SPEED, setSpeedTime, FALLING);
+	attachInterrupt(PIN_SPEED, intTabbiSpeed, FALLING);
 	attachInterrupt(PIN_LEFT, setDirectionLeft, FALLING);
 	attachInterrupt(PIN_RIGHT, setDirectionRight, FALLING);
 	
@@ -117,13 +119,28 @@ void loop() {
 
 	setOutputDirection(getDirection());
 
+	/* USE ALL THE INTERRUPTS !!!
 	if (ActualIntervalTime != LastIntervalTime) {
 		setOutputSpeed(getSpeed(LastIntervalTime, ActualIntervalTime));
 		// New Intervall starts
 		LastIntervalTime = ActualIntervalTime;
-	}
+	} */
 
 	timeoutSpeed(millis());
+}
+/*F******************************************************************
+* void
+* intTabbiSpeed()
+*
+* PURPOSE : sent the special Tabbi Key for MOOOORRRREEEE Speed
+*
+* RETURN :	void
+*
+* NOTES :	 cause @tabascoeye need this (30c3) only
+*F*/
+void intTabbiSpeed() {
+	Keyboard.press(TABBI_SPEED);
+	Keyboard.release(TABBI_SPEED);
 }
 
 /*F******************************************************************
@@ -139,7 +156,7 @@ void loop() {
 void setSpeedTime() {
 	if(DEBUG)
 		Keyboard.println("INTERRUPT - SPEED");
-
+	
 	ActualIntervalTime = millis();
 }
 /*F******************************************************************
