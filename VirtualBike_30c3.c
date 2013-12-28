@@ -4,18 +4,18 @@
 * Description : Drive trough Google Earth
 * Version : 1.0 (Special 30c3 Release)
 * Author : Sebastian Hansack
-* Note : This is a special Release intended to be shown on the 
+* Note : This is a special Release intended to be shown on the
 *				30c3
 * BEST VIEW: Tabsize = 2
 */
 
 /********************************************************************
-* Copyright 2012	
+* Copyright 2012
 *
-* This work is licensed under the 
-* Creative Commons Attribution-ShareAlike 3.0 Unported License. 
-* To view a copy of this license, visit 
-* http://creativecommons.org/licenses/by-sa/3.0/ 
+* This work is licensed under the
+* Creative Commons Attribution-ShareAlike 3.0 Unported License.
+* To view a copy of this license, visit
+* http://creativecommons.org/licenses/by-sa/3.0/
 *
 * or send a letter to
 * Creative Commons
@@ -27,7 +27,7 @@
 
 // constants general
 /********************************************************************
-* NOTES :	 
+* NOTES :
 *		Interrupts:
 *			Board			int.0		int.1		int.2		int.3		int.4
 *			Leonardo	 DP 3		 DP 2		 DP 0		 DP 1		 DP 7
@@ -81,7 +81,7 @@ void timeoutSpeed(unsigned long time);
 *
 * RETURN :	void
 *
-* NOTES :	 
+* NOTES :
 *		Interrupts:
 *			Board			int.0		int.1		int.2		int.3		int.4
 *			Leonardo	 DP 3		 DP 2		 DP 0		 DP 1		 DP 7
@@ -95,7 +95,7 @@ void setup() {
 	attachInterrupt(PIN_SPEED, intTabbiSpeed, FALLING);
 	attachInterrupt(PIN_LEFT, setDirectionLeft, FALLING);
 	attachInterrupt(PIN_RIGHT, setDirectionRight, FALLING);
-	
+
 	// init global vars
 	WheelDistanceInM = 3.14 * 2.54 * WHEEL / 100;
 }
@@ -141,6 +141,7 @@ void loop() {
 void intTabbiSpeed() {
 	Keyboard.press(TABBI_SPEED);
 	Keyboard.release(TABBI_SPEED);
+	setOutputDirection(getDirection());
 }
 
 /*F******************************************************************
@@ -156,7 +157,7 @@ void intTabbiSpeed() {
 void setSpeedTime() {
 	if(DEBUG)
 		Keyboard.println("INTERRUPT - SPEED");
-	
+
 	ActualIntervalTime = millis();
 }
 /*F******************************************************************
@@ -169,17 +170,17 @@ void setSpeedTime() {
 *
 * NOTES :	 none
 *F*/
-void setDirectionLeft() {	
+void setDirectionLeft() {
 	// If we are on the left Side right now, we go to the middle (1)
 	if (ActualDirection == 0) {
 		if (DEBUG)
 			Keyboard.println("INTERRUPT - DIR FROM LEFT TO MID");
-		
+
 		NewDirection = 1;
 	} else {
 		if (DEBUG)
 			Keyboard.println("INTERRUPT - DIR TO LEFT");
-		
+
 		NewDirection = 0;
 	}
 }
@@ -198,12 +199,12 @@ void setDirectionRight() {
 	if (ActualDirection == 2) {
 		if (DEBUG)
 			Keyboard.println("INTERRUPT - DIR FROM RIGHT TO MID");
-		
+
 		NewDirection = 1;
 	} else {
 		if (DEBUG)
 			Keyboard.println("INTERRUPT - DIR TO RIGHT");
-		
+
 		NewDirection = 2;
 	}
 }
@@ -213,7 +214,7 @@ void setDirectionRight() {
 * getSpeed( start, end )
 *
 * star		unsigned long; => rotation start in milliseconds
-* end		 unsigned long; => rotation end in milliseconds 
+* end		 unsigned long; => rotation end in milliseconds
 *
 * PURPOSE : calculating the speed of a wheel in meter per second
 *
@@ -267,7 +268,7 @@ void setOutputDirection(int new_direction) {
 		if(!DEBUG)
 				Keyboard.press(KEYBOARD_LEFT);
 	}
-	
+
 	// From:		MID
 	// to:			RIGHT
 	if ((ActualDirection == 1) && (new_direction == 2)) {
@@ -276,19 +277,19 @@ void setOutputDirection(int new_direction) {
 				Keyboard.press(KEYBOARD_RIGHT);
 	}
 
-	// From:		LEFT 
+	// From:		LEFT
 	// to:			RIGHT
 	if ((ActualDirection == 0) && (new_direction == 2)) {
 		// Release Left
 		if(!DEBUG)
 			Keyboard.release(KEYBOARD_LEFT);
-		
+
 		// now we drive right
 		if(!DEBUG)
 			Keyboard.press(KEYBOARD_RIGHT);
 	}
-	
-	// From:		LEFT 
+
+	// From:		LEFT
 	// to:			MID
 	if ((ActualDirection == 0) && (new_direction == 1)) {
 		// Release Right
@@ -302,12 +303,12 @@ void setOutputDirection(int new_direction) {
 		// Release Right
 		if(!DEBUG)
 			Keyboard.release(KEYBOARD_RIGHT);
-		
+
 		// now we drive left
 		if(!DEBUG)
 			Keyboard.press(KEYBOARD_LEFT);
 	}
-	
+
 	// From:		RIGHT
 	// to:			MID
 	if ((ActualDirection == 2) && (new_direction == 1)) {
@@ -329,9 +330,9 @@ void setOutputDirection(int new_direction) {
 *
 * NOTES :				 km/h				meter per second
 *			slow =>		 0 to 15			 0 to 4.16
-*			normal =>	15 to 30		4.16 to 8.33 
+*			normal =>	15 to 30		4.16 to 8.33
 *			fast =>		30 to ???	 8.33 to ???
-*			
+*
 *			speed				actual speed
 *			----------------------------------
 *			Slow		<=	Slow		==	nothing
@@ -343,7 +344,7 @@ void setOutputDirection(int new_direction) {
 *			Fast		<=	Slow		==	Press: PageUp
 *			Fast		<=	Normal	==	Release: Up, Press PageUp
 *			Fast		<=	Fast		==	nothing
-*			
+*
 *F*/
 void setOutputSpeed(float speed) {
 	if (DEBUG) {
