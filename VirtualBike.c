@@ -1,14 +1,5 @@
 /********************************************************************
 /********************************************************************
-* Name : 			User Shortcode
-* Description : 	Drive trough Google Earth
-* Version : 		1.0 (Special 30c3 Release)
-* Author : 			Sebastian Hansack
-* Note : 			* This is a special Release intended to be shown on the 30c3
-* 					* BEST VIEW: Tabsize = 4
-*/
-
-/********************************************************************
 * Copyright 2012
 *
 * This work is licensed under the
@@ -24,12 +15,20 @@
 * USA
 */
 
+/********************************************************************
+* Name :            Oculus Bike
+* Description :     Drive trough Google Earth
+* Version :         1.0 (Special 30c3 Release)
+* Author :          Sebastian Hansack
+* Note :            This is a special Release intended to be shown on the 30c3
+*/
+
 // constants general
 /********************************************************************
 * NOTES :
-*		Interrupts:
-*		Board		int.0	int.1	int.2	int.3	int.4
-*		Leonardo	DP 3	DP 2	DP 0	DP 1	DP 7
+*        Interrupts:
+*        Board       int.0   int.1   int.2   int.3   int.4
+*        Leonardo    DP 3    DP 2    DP 0    DP 1    DP 7
 */
 
 // This is the Digital Pin, not the Interrupt
@@ -56,9 +55,9 @@ int NewDirection = 0;
 * void
 * setup()
 *
-* PURPOSE :	init the arduino hardware
+* PURPOSE : init the arduino hardware
 *
-* RETURN :	void
+* RETURN : void
 *F*/
 void setup() {
   // init controlls
@@ -66,23 +65,23 @@ void setup() {
   Keyboard.begin();
 
   // init pins
-	attachInterrupt(PIN_LEFT, setDirectionLeft, FALLING);
-	attachInterrupt(PIN_CENTER, setDirectionCenter, FALLING);
-	attachInterrupt(PIN_RIGHT, setDirectionRight, FALLING);
+    attachInterrupt(PIN_LEFT, setDirectionLeft, FALLING);
+    attachInterrupt(PIN_CENTER, setDirectionCenter, FALLING);
+    attachInterrupt(PIN_RIGHT, setDirectionRight, FALLING);
 
-	attachInterrupt(PIN_SPEED, intSpeedKey, FALLING);
-	attachInterrupt(PIN_DEBUG, setDebugMode, CHANGE);
+    attachInterrupt(PIN_SPEED, intSpeedKey, FALLING);
+    attachInterrupt(PIN_DEBUG, setDebugMode, CHANGE);
 }
 
 /*F******************************************************************
 * void
 * loop()
 *
-* PURPOSE :	lifetime
+* PURPOSE : lifetime
 *
-* RETURN :	void
+* RETURN : void
 *
-* NOTES :	none
+* NOTES : none
 *F*/
 void loop() {
 
@@ -91,113 +90,113 @@ void loop() {
 * void
 * intSpeedKey()
 *
-* PURPOSE :	sent the special Tabbi Key for MOOOORRRREEEE Speed
+* PURPOSE : sent the special Tabbi Key for MOOOORRRREEEE Speed
 *
-* RETURN :	void
+* RETURN : void
 *
-* NOTES :	cause @tabascoeye need this (30c3) only
+* NOTES : cause @tabascoeye need this (30c3) only
 *F*/
 void setDebugMode() {
-	if (DEBUG == 1) {
-		Keyboard.println("DEBUG OFF");
-		DEBUG = 0;
-	} else if (DEBUG == 0) {
-		Keyboard.println("DEBUG ON");
-		DEBUG = 1;
-	}
+    if (DEBUG == 1) {
+        Keyboard.println("DEBUG OFF");
+        DEBUG = 0;
+    } else if (DEBUG == 0) {
+        Keyboard.println("DEBUG ON");
+        DEBUG = 1;
+    }
 }
 /*F******************************************************************
 * void
 * intSpeedKey()
 *
-* PURPOSE :	sent the special Tabbi Key for MOOOORRRREEEE Speed
+* PURPOSE : sent the special Tabbi Key for MOOOORRRREEEE Speed
 *
-* RETURN :	void
+* RETURN : void
 *
-* NOTES :	cause @tabascoeye need this (30c3) only
+* NOTES : cause @tabascoeye need this (30c3) only
 *F*/
 void intSpeedKey() {
-	Keyboard.write(KEYBOARD_SPEED);
-	setOutputDirection(NewDirection);
+    Keyboard.write(KEYBOARD_SPEED);
+    setOutputDirection(NewDirection);
 }
 /*F******************************************************************
 * void
 * setDirectionLeft()
 *
-* PURPOSE :	set the Direction to Left
+* PURPOSE : set the Direction to Left
 *
-* RETURN :	void
+* RETURN : void
 *
-* NOTES :	none
+* NOTES : none
 *F*/
 void setDirectionLeft() {
-	if ((ActualDirection == 1) && (DEBUG)) {
-		Keyboard.println("DIR Center to Left");
-	} else if ((ActualDirection == 2) && (DEBUG)) {
-		Keyboard.println("DIR Right to Left");
-	}
+    if ((ActualDirection == 1) && (DEBUG)) {
+        Keyboard.println("DIR Center to Left");
+    } else if ((ActualDirection == 2) && (DEBUG)) {
+        Keyboard.println("DIR Right to Left");
+    }
 
-	NewDirection = 0;
+    NewDirection = 0;
 }
 /*F******************************************************************
 * void
 * setDirectionRight()
 *
-* PURPOSE :	set the Direction to Right
+* PURPOSE :    set the Direction to Right
 *
-* RETURN :	void
+* RETURN :    void
 *
-* NOTES :	none
+* NOTES :    none
 *F*/
 void setDirectionRight() {
-	if ((ActualDirection == 0) && (DEBUG)) {
-		Keyboard.println("DIR Left to Right");
-	} else if ((ActualDirection == 1) && (DEBUG)) {
-		Keyboard.println("DIR Center to Right");
-	}
+    if ((ActualDirection == 0) && (DEBUG)) {
+        Keyboard.println("DIR Left to Right");
+    } else if ((ActualDirection == 1) && (DEBUG)) {
+        Keyboard.println("DIR Center to Right");
+    }
 
-	NewDirection = 2;
+    NewDirection = 2;
 }
 /*F******************************************************************
 * void
 * setDirectionCenter()
 *
-* PURPOSE :	set the Direction to Center
+* PURPOSE :    set the Direction to Center
 *
-* RETURN :	void
+* RETURN :    void
 *
-* NOTES :	none
+* NOTES :    none
 *F*/
 void setDirectionCenter() {
-	if ((ActualDirection == 2) && (DEBUG)) {
-		Keyboard.println("DIR Right to Center");
-	} else if ((ActualDirection == 0) && (DEBUG)) {
-		Keyboard.println("DIR Left to Center");
-	}
+    if ((ActualDirection == 2) && (DEBUG)) {
+        Keyboard.println("DIR Right to Center");
+    } else if ((ActualDirection == 0) && (DEBUG)) {
+        Keyboard.println("DIR Left to Center");
+    }
 
-	NewDirection = 1;
+    NewDirection = 1;
 }
 /*F******************************************************************
 * void
 * setOutputDirection()
-* 0 :	left
-* 1 :	middle
-* 2 :	right
+* 0 :    left
+* 1 :    middle
+* 2 :    right
 *
-* RETURN :	void
+* RETURN :    void
 *F*/
 void setOutputDirection(int new_direction) {
-	if ((new_direction == 0) && (!DEBUG)) {
-		Keyboard.write(KEYBOARD_LEFT);
-	}
+    if ((new_direction == 0) && (!DEBUG)) {
+        Keyboard.write(KEYBOARD_LEFT);
+    }
 
-	if ((new_direction == 1) && (!DEBUG)) {
-		// nothing
-	}
+    if ((new_direction == 1) && (!DEBUG)) {
+        // nothing
+    }
 
-	if ((new_direction == 2) && (!DEBUG)) {
-		Keyboard.write(KEYBOARD_RIGHT);
-	}
+    if ((new_direction == 2) && (!DEBUG)) {
+        Keyboard.write(KEYBOARD_RIGHT);
+    }
 
-	ActualDirection = new_direction;
+    ActualDirection = new_direction;
 }
